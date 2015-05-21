@@ -2,14 +2,15 @@ var Joi = require('joi');
 var union = require('lodash.union');
 
 var JoiValidationStrategy = {
-  validate: function(joiSchema, data, key) {
+  validate: function(joiSchema, data, key, useErrorKey) {
     joiSchema = joiSchema || {};
     data = data || {};
+    useErrorKey = !!useErrorKey;
     var joiOptions = {
       abortEarly: false,
       allowUnknown: true,
     };
-    var errors = this._format(Joi.validate(data, joiSchema, joiOptions));
+    var errors = this._format(Joi.validate(data, joiSchema, joiOptions), useErrorKey);
     if (key === undefined) {
       union(Object.keys(joiSchema), Object.keys(data)).forEach(function(error) {
         errors[error] = errors[error] || [];
@@ -22,13 +23,13 @@ var JoiValidationStrategy = {
     }
   },
 
-  _format: function(joiResult) {
+  _format: function(joiResult, useErrorKey) {
     if (joiResult.error !== null) {
       return joiResult.error.details.reduce(function(memo, detail) {
         if (!Array.isArray(memo[detail.path])) {
           memo[detail.path] = [];
         }
-        memo[detail.path].push(detail.message);
+        memo[detail.path].push(useErrorKey ? detail.type : detail.message);
         return memo;
       }, {});
     } else {
