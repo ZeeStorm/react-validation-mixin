@@ -13,7 +13,7 @@ var JoiValidationStrategy = {
     var errors = this._format(Joi.validate(data, joiSchema, joiOptions), useErrorKey);
     if (key === undefined) {
       union(Object.keys(joiSchema), Object.keys(data)).forEach(function(error) {
-        errors[error] = errors[error] || [];
+        errors[error] = errors[error] || ( useErrorKey ? {} : [] );
       });
       return errors;
     } else {
