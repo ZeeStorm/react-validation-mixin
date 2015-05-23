@@ -13,7 +13,7 @@ var JoiValidationStrategy = {
     var errors = this._format(Joi.validate(data, joiSchema, joiOptions), useErrorKey);
     if (key === undefined) {
       union(Object.keys(joiSchema), Object.keys(data)).forEach(function(error) {
-        errors[error] = errors[error] || ( useErrorKey ? {} : [] );
+        errors[error] = errors[error] || [];
       });
       return errors;
     } else {
@@ -26,19 +26,15 @@ var JoiValidationStrategy = {
   _format: function(joiResult, useErrorKey) {
     if (joiResult.error !== null) {
       return joiResult.error.details.reduce(function(memo, detail) {
+        if (!Array.isArray(memo[detail.path])) {
+          memo[detail.path] = [];
+        }
         if ( useErrorKey )
         {
-          if ( typeof memo[detail.path] != 'object' )
-          {
-            memo[detail.path] = {};
-          }
-          memo[detail.path][ detail.type ] = true;
+          memo[detail.path].push( detail.type );
         }
         else
         {
-          if (!Array.isArray(memo[detail.path])) {
-            memo[detail.path] = [];
-          }
           memo[detail.path].push(detail.message);
         }
         return memo;
